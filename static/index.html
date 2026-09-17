@@ -1,404 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>ClinicFlow</title>
-
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ClinicFlow - conflict-free clinic appointment management">
+  <title>ClinicFlow | Smart Clinic Scheduling</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
 </head>
-
 <body>
+  <header class="site-header" id="home">
+    <nav class="navbar container">
+      <a class="brand" href="#home" aria-label="ClinicFlow home">
+        <span class="brand-mark">+</span>
+        <span>Clinic<span>Flow</span></span>
+      </a>
 
-<!-- =====================================================
-     LANDING PAGE
-===================================================== -->
+      <div class="nav-links">
+        <a href="#home" class="active">Home</a>
+        <a href="#features">Features</a>
+        <a href="#doctors">Doctors</a>
+        <a href="#about">How it works</a>
+      </div>
 
-<header class="hero">
-
-    <nav>
-        <div class="logo">ClinicFlow</div>
-
-        <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="#audience">Who It's For</a>
-            <a href="#future">Future</a>
-            <button onclick="showApp()">Open Dashboard</button>
-        </div>
+      <button class="nav-cta" data-open-dashboard>Open Front Desk <span>→</span></button>
+      <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
     </nav>
 
-    <div class="hero-content">
+    <div class="mobile-nav" id="mobileNav">
+      <a href="#home">Home</a>
+      <a href="#features">Features</a>
+      <a href="#doctors">Doctors</a>
+      <a href="#about">How it works</a>
+      <button data-open-dashboard>Open Front Desk</button>
+    </div>
 
-        <div>
-
-            <p class="tagline">SMART CLINIC SCHEDULING</p>
-
-            <h1>
-                Simple appointment management
-                without double-booking.
-            </h1>
-
-            <p class="hero-text">
-                ClinicFlow helps clinic front desks manage doctors,
-                patients and appointments while automatically preventing
-                overlapping bookings.
-            </p>
-
-            <button class="primary-btn" onclick="showApp()">
-                Open Front Desk
-            </button>
-
+    <section class="hero container">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="pulse"></span> SMART CLINIC SCHEDULING</div>
+        <h1>Appointments that stay <span>conflict-free.</span></h1>
+        <p>
+          ClinicFlow gives busy clinic front desks one simple place to book,
+          search, schedule and cancel appointments without accidentally
+          double-booking a doctor.
+        </p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-open-dashboard>Open Front Desk <span>→</span></button>
+          <a class="secondary-link" href="#features">Explore features ↓</a>
         </div>
+        <div class="hero-trust">
+          <div class="avatar-stack">
+            <span>DS</span><span>AM</span><span>RK</span><span>+</span>
+          </div>
+          <div><strong>Built for small clinics</strong><small>Fast, clear and easy for the front desk</small></div>
+        </div>
+      </div>
 
-        <div class="hero-card">
+      <div class="hero-visual">
+        <div class="floating-badge badge-top"><span class="badge-icon">✓</span><div><strong>Conflict Free</strong><small>No overlapping slots</small></div></div>
 
-            <div class="card-header">
-                <span>Today's Schedule</span>
-                <span class="status">Conflict Free</span>
+        <div class="schedule-card">
+          <div class="schedule-head">
+            <div>
+              <span class="mini-label">TODAY'S SCHEDULE</span>
+              <h3>Doctor availability</h3>
             </div>
+            <span class="live-pill"><i></i> Live</span>
+          </div>
 
-            <div class="schedule-item">
-                <span>10:00 - 11:00</span>
-                <strong>Dr. Sharma</strong>
-                <small>Rahul Sharma</small>
-            </div>
+          <div class="doctor-row">
+            <div class="doctor-avatar avatar-one">DS</div>
+            <div class="doctor-info"><strong>Dr. Sharma</strong><span>General Physician</span></div>
+            <span class="available">Available</span>
+          </div>
+          <div class="time-row"><span>10:00 AM</span><div class="line"></div><strong>Rahul Sharma</strong><small>10:00–11:00</small></div>
+          <div class="time-row"><span>11:00 AM</span><div class="line"></div><strong>Priya Gupta</strong><small>11:00–12:00</small></div>
 
-            <div class="schedule-item">
-                <span>11:00 - 12:00</span>
-                <strong>Dr. Sharma</strong>
-                <small>Priya Gupta</small>
-            </div>
-
-            <div class="schedule-item">
-                <span>14:00 - 15:00</span>
-                <strong>Dr. Mehta</strong>
-                <small>Amit Singh</small>
-            </div>
-
+          <div class="doctor-row second">
+            <div class="doctor-avatar avatar-two">DM</div>
+            <div class="doctor-info"><strong>Dr. Mehta</strong><span>Dermatologist</span></div>
+            <span class="available">Available</span>
+          </div>
+          <div class="time-row"><span>02:00 PM</span><div class="line"></div><strong>Amit Singh</strong><small>14:00–15:00</small></div>
         </div>
 
-    </div>
+        <div class="floating-badge badge-bottom"><span class="badge-icon fee">₹</span><div><strong>Fair cancellation</strong><small>Automatic fee calculation</small></div></div>
+      </div>
+    </section>
+  </header>
 
-</header>
+  <main>
+    <section class="stats container">
+      <div><strong>01</strong><span>Conflict-free booking</span></div>
+      <div><strong>24h</strong><span>Cancellation policy</span></div>
+      <div><strong>100%</strong><span>Persistent records</span></div>
+      <div><strong>REST</strong><span>API-powered workflow</span></div>
+    </section>
 
+    <section class="section container" id="features">
+      <div class="section-heading">
+        <div><span class="eyebrow">WHY CLINICFLOW</span><h2>Everything the front desk needs.</h2></div>
+        <p>Designed around the real frustrations of a busy clinic: overlapping slots, hard-to-find appointments and unclear cancellations.</p>
+      </div>
 
-<!-- =====================================================
-     FEATURES
-===================================================== -->
+      <div class="feature-grid">
+        <article class="feature-card featured">
+          <div class="feature-icon">✓</div>
+          <h3>Conflict-Free Booking</h3>
+          <p>Every new appointment is checked against existing appointments for the same doctor before it is saved.</p>
+          <div class="feature-example"><span>10:00–11:00</span><b>×</b><span>10:30–11:30</span><em>Blocked</em></div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon search-icon">⌕</div>
+          <h3>Find Patients Fast</h3>
+          <p>Search appointments by patient name and get the result without browsing through the entire schedule.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon calendar-icon">▣</div>
+          <h3>Doctor's Day View</h3>
+          <p>See a doctor's appointments for a selected date in chronological order.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon rupee-icon">₹</div>
+          <h3>Fair Cancellation</h3>
+          <p>Early cancellations are free; cancellations within 24 hours automatically receive the ₹200 fee.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon lock-icon">⌑</div>
+          <h3>Secure Access</h3>
+          <p>Registration, login and bearer-token protected appointment operations keep the workflow authenticated.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon sort-icon">↕</div>
+          <h3>Pagination & Sorting</h3>
+          <p>Keep growing appointment lists manageable with page controls and flexible sorting.</p>
+        </article>
+      </div>
+    </section>
 
-<section id="features">
-
-    <h2>Key Features</h2>
-
-    <div class="feature-grid">
-
-        <div class="feature-card">
-            <h3>Conflict-Free Booking</h3>
-            <p>
-                Prevents overlapping appointments for the same doctor.
-            </p>
+    <section class="doctor-section" id="doctors">
+      <div class="container">
+        <div class="section-heading centered">
+          <div><span class="eyebrow">CLINIC TEAM</span><h2>Manage every doctor from one place.</h2></div>
+          <p>Choose a doctor, select a time and let ClinicFlow handle the conflict check.</p>
         </div>
-
-        <div class="feature-card">
-            <h3>Doctor Schedule</h3>
-            <p>
-                View a doctor's appointments for a specific day.
-            </p>
+        <div class="doctor-grid" id="landingDoctors">
+          <div class="doctor-card skeleton"></div>
+          <div class="doctor-card skeleton"></div>
+          <div class="doctor-card skeleton"></div>
         </div>
+      </div>
+    </section>
 
-        <div class="feature-card">
-            <h3>Patient Search</h3>
-            <p>
-                Quickly find appointments using a patient's name.
-            </p>
+    <section class="workflow-section" id="about">
+      <div class="container workflow">
+        <div class="workflow-copy">
+          <span class="eyebrow">HOW IT HELPS</span>
+          <h2>From booking request to a clean schedule.</h2>
+          <p>ClinicFlow keeps the front-desk workflow short and predictable.</p>
+          <div class="workflow-list">
+            <div><b>01</b><span><strong>Choose a doctor</strong>Pick the doctor and appointment date.</span></div>
+            <div><b>02</b><span><strong>Check the slot</strong>The API rejects any overlapping appointment.</span></div>
+            <div><b>03</b><span><strong>Manage the day</strong>Search patients or open the doctor's daily schedule.</span></div>
+          </div>
         </div>
-
-        <div class="feature-card">
-            <h3>Fair Cancellation</h3>
-            <p>
-                Automatically calculates the late cancellation fee.
-            </p>
+        <div class="workflow-panel">
+          <div class="panel-title"><span>Appointment status</span><span class="green-dot">● All clear</span></div>
+          <div class="progress-row"><span>Doctor schedule</span><strong>3 appointments</strong></div>
+          <div class="progress"><i style="width:72%"></i></div>
+          <div class="mini-stat-grid">
+            <div><strong>0</strong><span>Overlaps</span></div>
+            <div><strong>1</strong><span>Cancelled</span></div>
+            <div><strong>₹200</strong><span>Late fee</span></div>
+          </div>
         </div>
+      </div>
+    </section>
 
-    </div>
+    <section class="future container" id="future">
+      <div class="future-head">
+        <div><span class="eyebrow">NEXT STEPS</span><h2>What we'd build next.</h2></div>
+        <p>The current product focuses on the core scheduling problem first.</p>
+      </div>
+      <div class="future-grid">
+        <article><span>01</span><h3>SMS & WhatsApp reminders</h3><p>Automatically remind patients before their appointment.</p></article>
+        <article><span>02</span><h3>Online payments</h3><p>Collect consultation fees and provide digital receipts.</p></article>
+        <article><span>03</span><h3>Doctor availability</h3><p>Manage working hours, leave, holidays and available slots.</p></article>
+      </div>
+    </section>
 
-</section>
+    <section class="cta container">
+      <div><span class="eyebrow light">READY FOR THE FRONT DESK?</span><h2>Keep every appointment on track.</h2><p>One clean workflow for doctors, patients and clinic staff.</p></div>
+      <button class="white-btn" data-open-dashboard>Open ClinicFlow <span>→</span></button>
+    </section>
 
+    <section class="app-section container" id="app">
+      <div class="app-topbar">
+        <div><span class="eyebrow">FRONT DESK</span><h2>ClinicFlow Dashboard</h2><p>Book, search and manage appointments.</p></div>
+        <button class="outline-btn" id="logoutBtn">Logout</button>
+      </div>
 
-<!-- =====================================================
-     TARGET AUDIENCE
-===================================================== -->
-
-<section id="audience" class="audience">
-
-    <h2>Who It's For</h2>
-
-    <div class="audience-list">
-
-        <span>Clinic Front Desks</span>
-        <span>Doctors</span>
-        <span>Clinic Administrators</span>
-        <span>Small Healthcare Clinics</span>
-
-    </div>
-
-    <h2>How ClinicFlow Helps</h2>
-
-    <p>
-        ClinicFlow reduces manual scheduling mistakes, prevents
-        doctor double-booking, makes patient appointments easier
-        to find and applies a consistent cancellation policy.
-    </p>
-
-</section>
-
-
-<!-- =====================================================
-     FUTURE FEATURES
-===================================================== -->
-
-<section id="future">
-
-    <h2>What We'd Build Next</h2>
-
-    <div class="future-grid">
-
-        <div>
-            <h3>1. SMS & WhatsApp Reminders</h3>
-            <p>
-                Automatically remind patients about upcoming visits.
-            </p>
+      <div id="loginBox" class="auth-card">
+        <div class="auth-copy"><span class="eyebrow">WELCOME BACK</span><h2>Sign in to your front desk.</h2><p>Use your clinic account to access appointment management.</p></div>
+        <div class="auth-form">
+          <input id="loginEmail" type="email" placeholder="Email">
+          <input id="loginPassword" type="password" placeholder="Password">
+          <button class="primary-btn full" id="loginBtn">Login <span>→</span></button>
+          <p class="form-message" id="loginMessage"></p>
+          <div class="divider"><span>New patient?</span></div>
+          <input id="registerName" placeholder="Full name">
+          <input id="registerEmail" type="email" placeholder="Email">
+          <input id="registerPassword" type="password" placeholder="Password">
+          <button class="outline-btn full" id="registerBtn">Create account</button>
+          <p class="form-message" id="registerMessage"></p>
         </div>
+      </div>
 
-        <div>
-            <h3>2. Online Payments</h3>
-            <p>
-                Allow patients to pay consultation fees online.
-            </p>
-        </div>
-
-        <div>
-            <h3>3. Doctor Availability</h3>
-            <p>
-                Manage doctor leave, working hours and availability.
-            </p>
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     APPLICATION
-===================================================== -->
-
-<section id="app" class="app-section hidden">
-
-    <div class="app-header">
-
-        <div>
-            <h2>Clinic Front Desk</h2>
-            <p>Manage appointments from one place.</p>
-        </div>
-
-        <button onclick="logout()" class="secondary-btn">
-            Logout
-        </button>
-
-    </div>
-
-
-    <!-- LOGIN -->
-
-    <div id="loginBox" class="panel">
-
-        <h3>Login</h3>
-
-        <input
-            id="loginEmail"
-            type="email"
-            placeholder="Email"
-        >
-
-        <input
-            id="loginPassword"
-            type="password"
-            placeholder="Password"
-        >
-
-        <button onclick="login()" class="primary-btn">
-            Login
-        </button>
-
-        <p id="loginMessage"></p>
-
-        <hr>
-
-        <h3>New Patient?</h3>
-
-        <input
-            id="registerName"
-            placeholder="Full Name"
-        >
-
-        <input
-            id="registerEmail"
-            type="email"
-            placeholder="Email"
-        >
-
-        <input
-            id="registerPassword"
-            type="password"
-            placeholder="Password"
-        >
-
-        <button onclick="register()" class="secondary-btn">
-            Register
-        </button>
-
-        <p id="registerMessage"></p>
-
-    </div>
-
-
-    <!-- DASHBOARD -->
-
-    <div id="dashboard" class="hidden">
-
+      <div id="dashboard" class="dashboard hidden">
         <div class="dashboard-grid">
+          <section class="dash-card booking-card">
+            <div class="dash-title"><div><span class="eyebrow">NEW APPOINTMENT</span><h3>Book a slot</h3></div><span class="secure-tag">✓ Conflict check</span></div>
+            <label>Doctor<select id="doctorSelect"></select></label>
+            <div class="two-col"><label>Date<input id="appointmentDate" type="date"></label><label>Start<input id="startTime" type="time"></label></div>
+            <label>End time<input id="endTime" type="time"></label>
+            <button class="primary-btn full" id="bookBtn">Book appointment <span>→</span></button>
+            <p class="form-message" id="bookingMessage"></p>
+          </section>
 
-
-            <!-- BOOK APPOINTMENT -->
-
-            <div class="panel">
-
-                <h3>Book Appointment</h3>
-
-                <label>Doctor</label>
-
-                <select id="doctorSelect"></select>
-
-                <label>Date</label>
-
-                <input
-                    id="appointmentDate"
-                    type="date"
-                >
-
-                <label>Start Time</label>
-
-                <input
-                    id="startTime"
-                    type="time"
-                >
-
-                <label>End Time</label>
-
-                <input
-                    id="endTime"
-                    type="time"
-                >
-
-                <button
-                    onclick="bookAppointment()"
-                    class="primary-btn"
-                >
-                    Book Appointment
-                </button>
-
-                <p id="bookingMessage"></p>
-
-            </div>
-
-
-            <!-- DOCTOR SCHEDULE -->
-
-            <div class="panel">
-
-                <h3>Doctor's Day</h3>
-
-                <select id="scheduleDoctor"></select>
-
-                <input
-                    id="scheduleDate"
-                    type="date"
-                >
-
-                <button
-                    onclick="loadSchedule()"
-                    class="secondary-btn"
-                >
-                    View Schedule
-                </button>
-
-                <div id="scheduleResults"></div>
-
-            </div>
-
-
+          <section class="dash-card">
+            <div class="dash-title"><div><span class="eyebrow">DOCTOR'S DAY</span><h3>Daily schedule</h3></div></div>
+            <div class="two-col"><label>Doctor<select id="scheduleDoctor"></select></label><label>Date<input id="scheduleDate" type="date"></label></div>
+            <button class="outline-btn full" id="scheduleBtn">View schedule</button>
+            <div id="scheduleResults" class="results"></div>
+          </section>
         </div>
 
+        <section class="dash-card">
+          <div class="dash-title"><div><span class="eyebrow">PATIENT SEARCH</span><h3>Find appointments</h3></div></div>
+          <div class="search-bar"><input id="searchName" placeholder="Search by patient name..."><button class="primary-btn" id="searchBtn">Search</button></div>
+          <div id="searchResults" class="results"></div>
+        </section>
 
-        <!-- SEARCH -->
+        <section class="dash-card">
+          <div class="dash-title"><div><span class="eyebrow">APPOINTMENTS</span><h3>Recent bookings</h3></div><button class="outline-btn small" id="refreshBtn">Refresh</button></div>
+          <div id="appointmentsResults" class="appointment-list"></div>
+        </section>
+      </div>
+    </section>
+  </main>
 
-        <div class="panel">
-
-            <h3>Search Patient Appointments</h3>
-
-            <div class="search-row">
-
-                <input
-                    id="searchName"
-                    placeholder="Enter patient name"
-                >
-
-                <button
-                    onclick="searchAppointments()"
-                    class="primary-btn"
-                >
-                    Search
-                </button>
-
-            </div>
-
-            <div id="searchResults"></div>
-
-        </div>
-
-
-        <!-- ALL APPOINTMENTS -->
-
-        <div class="panel">
-
-            <h3>Appointments</h3>
-
-            <button
-                onclick="loadAppointments()"
-                class="secondary-btn"
-            >
-                Refresh
-            </button>
-
-            <div id="appointmentsResults"></div>
-
-        </div>
-
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div><a class="brand footer-brand" href="#home"><span class="brand-mark">+</span><span>Clinic<span>Flow</span></span></a><p>Smart appointment management for busy clinic front desks.</p></div>
+      <div><h4>Product</h4><a href="#features">Features</a><a href="#doctors">Doctors</a><a href="#about">How it works</a></div>
+      <div><h4>Assessment</h4><p>Full-stack clinic scheduling product</p><p>FastAPI · SQLite · REST API</p></div>
     </div>
+    <div class="container footer-bottom"><span>ClinicFlow · 2026</span><span>Built for reliable scheduling.</span></div>
+  </footer>
 
-</section>
-
-
-<footer>
-
-    <p>ClinicFlow — Clinic Front Desk Management</p>
-
-</footer>
-
-
-<script src="/static/app.js"></script>
-
+  <div id="toast" class="toast"></div>
+  <script src="/static/app.js"></script>
 </body>
 </html>
