@@ -1,8 +1,6 @@
 ````markdown
 <div align="center">
 
-<img src="https://img.shields.io/badge/-%F0%9F%8F%A5%20CLINICFLOW-2563EB?style=for-the-badge&labelColor=0a0a0a&color=2563EB" alt="ClinicFlow" height="50"/>
-
 # ClinicFlow — Conflict-Free Clinic Appointment Management
 
 ### *Appointments that stay conflict-free.*
@@ -564,14 +562,13 @@ uvicorn main:app --reload
 Open:
 
 ```text
-http://127.0.0.1:8000
+https://crispy-goldfish-v6ww9g55xgjxhw4pr-8000.app.github.dev/docs#/default/create_appointment_appointments_post
 ```
 
 FastAPI Swagger documentation:
 
 ```text
-http://127.0.0.1:8000/docs
-```
+https://crispy-goldfish-v6ww9g55xgjxhw4pr-8000.app.github.dev/docs#/default/create_appointment_appointments_post
 
 ---
 
