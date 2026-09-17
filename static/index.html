@@ -3,263 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ClinicFlow - conflict-free clinic appointment management">
-  <title>ClinicFlow | Smart Clinic Scheduling</title>
+  <title>ClinicFlow | Front Desk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header class="site-header" id="home">
-    <nav class="navbar container">
-      <a class="brand" href="#home" aria-label="ClinicFlow home">
-        <span class="brand-mark">+</span>
-        <span>Clinic<span>Flow</span></span>
-      </a>
-
-      <div class="nav-links">
-        <a href="#home" class="active">Home</a>
-        <a href="#features">Features</a>
-        <a href="#doctors">Doctors</a>
-        <a href="#about">How it works</a>
+  <div id="loginBox" class="login-page">
+    <div class="login-brand"><span>+</span> ClinicFlow</div>
+    <div class="login-card">
+      <div class="login-intro">
+        <div class="eyebrow">FRONT DESK PORTAL</div>
+        <h1>Keep every appointment conflict-free.</h1>
+        <p>Book, reschedule and manage the clinic day from one clean workspace.</p>
+        <div class="login-points"><div>✓ No overlapping doctor slots</div><div>✓ Automatic reminders & no-shows</div><div>✓ Cancellation fee tracking</div></div>
       </div>
-
-      <button class="nav-cta" data-open-dashboard>Open Front Desk <span>→</span></button>
-      <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
-    </nav>
-
-    <div class="mobile-nav" id="mobileNav">
-      <a href="#home">Home</a>
-      <a href="#features">Features</a>
-      <a href="#doctors">Doctors</a>
-      <a href="#about">How it works</a>
-      <button data-open-dashboard>Open Front Desk</button>
+      <div class="auth-form">
+        <h2>Welcome back</h2><p>Sign in to open the front desk.</p>
+        <label>Email<input id="loginEmail" type="email" placeholder="you@example.com"></label>
+        <label>Password<input id="loginPassword" type="password" placeholder="••••••••"></label>
+        <button id="loginBtn" class="primary-btn full">Sign in</button>
+        <div id="loginMessage" class="form-message"></div>
+        <div class="divider">NEW TO CLINICFLOW?</div>
+        <label>Name<input id="registerName" placeholder="Your name"></label>
+        <label>Email<input id="registerEmail" type="email" placeholder="you@example.com"></label>
+        <label>Password<input id="registerPassword" type="password" placeholder="Minimum 6 characters"></label>
+        <button id="registerBtn" class="outline-btn full">Create account</button>
+        <div id="registerMessage" class="form-message"></div>
+      </div>
     </div>
+  </div>
 
-    <section class="hero container">
-      <div class="hero-copy">
-        <div class="eyebrow"><span class="pulse"></span> SMART CLINIC SCHEDULING</div>
-        <h1>Appointments that stay <span>conflict-free.</span></h1>
-        <p>
-          ClinicFlow gives busy clinic front desks one simple place to book,
-          search, schedule and cancel appointments without accidentally
-          double-booking a doctor.
-        </p>
-        <div class="hero-actions">
-          <button class="primary-btn" data-open-dashboard>Open Front Desk <span>→</span></button>
-          <a class="secondary-link" href="#features">Explore features ↓</a>
+  <div id="dashboard" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span>+</span> ClinicFlow</div>
+      <div class="sidebar-label">MAIN MENU</div>
+      <button class="nav-item active" data-section="overview"><span>⌂</span> Dashboard</button>
+      <button class="nav-item" data-section="appointments"><span>▣</span> Appointments</button>
+      <button class="nav-item" data-section="doctors"><span>♙</span> Doctors</button>
+      <button class="nav-item" data-section="patients"><span>♧</span> Patients</button>
+      <button class="nav-item" data-section="schedule"><span>◷</span> Doctor Schedule</button>
+      <button class="nav-item" data-section="cancellations"><span>₹</span> Cancellation & Fees</button>
+      <button class="nav-item" data-section="reports"><span>▥</span> Reports</button>
+      <div class="sidebar-bottom"><div class="secure"><span>●</span><div><b>System healthy</b><small>Scheduling engine online</small></div></div><button id="logoutBtn" class="logout">↪ Logout</button></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar"><button id="sidebarToggle" class="icon-btn">☰</button><div class="breadcrumb">Front Desk <span>/</span> <b id="pageTitle">Dashboard</b></div><div class="top-actions"><button id="clockBtn" class="outline-btn small">Run Clock</button><div class="user-pill"><div class="user-avatar" id="userAvatar">AD</div><div><b id="userName">Admin</b><small>Front Desk</small></div></div></div></header>
+
+      <section id="overview" class="page-section active-section">
+        <div class="page-heading"><div><span class="eyebrow">OVERVIEW</span><h1>Good morning, <span id="helloName">Admin</span> 👋</h1><p>Here's what's happening at the clinic today.</p></div><button class="primary-btn" data-go="new-appointment">+ Book appointment</button></div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon blue">♙</div><small>Total Doctors</small><strong id="statDoctors">0</strong><span>Active doctors</span></div>
+          <div class="stat-card"><div class="stat-icon purple">♧</div><small>Total Patients</small><strong id="statPatients">0</strong><span>Registered patients</span></div>
+          <div class="stat-card"><div class="stat-icon green">▣</div><small>Today's Appointments</small><strong id="statToday">0</strong><span>Scheduled today</span></div>
+          <div class="stat-card"><div class="stat-icon orange">◷</div><small>No-shows</small><strong id="statNoShows">0</strong><span>Marked automatically</span></div>
         </div>
-        <div class="hero-trust">
-          <div class="avatar-stack">
-            <span>DS</span><span>AM</span><span>RK</span><span>+</span>
-          </div>
-          <div><strong>Built for small clinics</strong><small>Fast, clear and easy for the front desk</small></div>
-        </div>
-      </div>
-
-      <div class="hero-visual">
-        <div class="floating-badge badge-top"><span class="badge-icon">✓</span><div><strong>Conflict Free</strong><small>No overlapping slots</small></div></div>
-
-        <div class="schedule-card">
-          <div class="schedule-head">
-            <div>
-              <span class="mini-label">TODAY'S SCHEDULE</span>
-              <h3>Doctor availability</h3>
-            </div>
-            <span class="live-pill"><i></i> Live</span>
-          </div>
-
-          <div class="doctor-row">
-            <div class="doctor-avatar avatar-one">DS</div>
-            <div class="doctor-info"><strong>Dr. Sharma</strong><span>General Physician</span></div>
-            <span class="available">Available</span>
-          </div>
-          <div class="time-row"><span>10:00 AM</span><div class="line"></div><strong>Rahul Sharma</strong><small>10:00–11:00</small></div>
-          <div class="time-row"><span>11:00 AM</span><div class="line"></div><strong>Priya Gupta</strong><small>11:00–12:00</small></div>
-
-          <div class="doctor-row second">
-            <div class="doctor-avatar avatar-two">DM</div>
-            <div class="doctor-info"><strong>Dr. Mehta</strong><span>Dermatologist</span></div>
-            <span class="available">Available</span>
-          </div>
-          <div class="time-row"><span>02:00 PM</span><div class="line"></div><strong>Amit Singh</strong><small>14:00–15:00</small></div>
-        </div>
-
-        <div class="floating-badge badge-bottom"><span class="badge-icon fee">₹</span><div><strong>Fair cancellation</strong><small>Automatic fee calculation</small></div></div>
-      </div>
-    </section>
-  </header>
-
-  <main>
-    <section class="stats container">
-      <div><strong>01</strong><span>Conflict-free booking</span></div>
-      <div><strong>24h</strong><span>Cancellation policy</span></div>
-      <div><strong>100%</strong><span>Persistent records</span></div>
-      <div><strong>REST</strong><span>API-powered workflow</span></div>
-    </section>
-
-    <section class="section container" id="features">
-      <div class="section-heading">
-        <div><span class="eyebrow">WHY CLINICFLOW</span><h2>Everything the front desk needs.</h2></div>
-        <p>Designed around the real frustrations of a busy clinic: overlapping slots, hard-to-find appointments and unclear cancellations.</p>
-      </div>
-
-      <div class="feature-grid">
-        <article class="feature-card featured">
-          <div class="feature-icon">✓</div>
-          <h3>Conflict-Free Booking</h3>
-          <p>Every new appointment is checked against existing appointments for the same doctor before it is saved.</p>
-          <div class="feature-example"><span>10:00–11:00</span><b>×</b><span>10:30–11:30</span><em>Blocked</em></div>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon search-icon">⌕</div>
-          <h3>Find Patients Fast</h3>
-          <p>Search appointments by patient name and get the result without browsing through the entire schedule.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon calendar-icon">▣</div>
-          <h3>Doctor's Day View</h3>
-          <p>See a doctor's appointments for a selected date in chronological order.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon rupee-icon">₹</div>
-          <h3>Fair Cancellation</h3>
-          <p>Early cancellations are free; cancellations within 24 hours automatically receive the ₹200 fee.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon lock-icon">⌑</div>
-          <h3>Secure Access</h3>
-          <p>Registration, login and bearer-token protected appointment operations keep the workflow authenticated.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon sort-icon">↕</div>
-          <h3>Pagination & Sorting</h3>
-          <p>Keep growing appointment lists manageable with page controls and flexible sorting.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="doctor-section" id="doctors">
-      <div class="container">
-        <div class="section-heading centered">
-          <div><span class="eyebrow">CLINIC TEAM</span><h2>Manage every doctor from one place.</h2></div>
-          <p>Choose a doctor, select a time and let ClinicFlow handle the conflict check.</p>
-        </div>
-        <div class="doctor-grid" id="landingDoctors">
-          <div class="doctor-card skeleton"></div>
-          <div class="doctor-card skeleton"></div>
-          <div class="doctor-card skeleton"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="workflow-section" id="about">
-      <div class="container workflow">
-        <div class="workflow-copy">
-          <span class="eyebrow">HOW IT HELPS</span>
-          <h2>From booking request to a clean schedule.</h2>
-          <p>ClinicFlow keeps the front-desk workflow short and predictable.</p>
-          <div class="workflow-list">
-            <div><b>01</b><span><strong>Choose a doctor</strong>Pick the doctor and appointment date.</span></div>
-            <div><b>02</b><span><strong>Check the slot</strong>The API rejects any overlapping appointment.</span></div>
-            <div><b>03</b><span><strong>Manage the day</strong>Search patients or open the doctor's daily schedule.</span></div>
-          </div>
-        </div>
-        <div class="workflow-panel">
-          <div class="panel-title"><span>Appointment status</span><span class="green-dot">● All clear</span></div>
-          <div class="progress-row"><span>Doctor schedule</span><strong>3 appointments</strong></div>
-          <div class="progress"><i style="width:72%"></i></div>
-          <div class="mini-stat-grid">
-            <div><strong>0</strong><span>Overlaps</span></div>
-            <div><strong>1</strong><span>Cancelled</span></div>
-            <div><strong>₹200</strong><span>Late fee</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="future container" id="future">
-      <div class="future-head">
-        <div><span class="eyebrow">NEXT STEPS</span><h2>What we'd build next.</h2></div>
-        <p>The current product focuses on the core scheduling problem first.</p>
-      </div>
-      <div class="future-grid">
-        <article><span>01</span><h3>SMS & WhatsApp reminders</h3><p>Automatically remind patients before their appointment.</p></article>
-        <article><span>02</span><h3>Online payments</h3><p>Collect consultation fees and provide digital receipts.</p></article>
-        <article><span>03</span><h3>Doctor availability</h3><p>Manage working hours, leave, holidays and available slots.</p></article>
-      </div>
-    </section>
-
-    <section class="cta container">
-      <div><span class="eyebrow light">READY FOR THE FRONT DESK?</span><h2>Keep every appointment on track.</h2><p>One clean workflow for doctors, patients and clinic staff.</p></div>
-      <button class="white-btn" data-open-dashboard>Open ClinicFlow <span>→</span></button>
-    </section>
-
-    <section class="app-section container" id="app">
-      <div class="app-topbar">
-        <div><span class="eyebrow">FRONT DESK</span><h2>ClinicFlow Dashboard</h2><p>Book, search and manage appointments.</p></div>
-        <button class="outline-btn" id="logoutBtn">Logout</button>
-      </div>
-
-      <div id="loginBox" class="auth-card">
-        <div class="auth-copy"><span class="eyebrow">WELCOME BACK</span><h2>Sign in to your front desk.</h2><p>Use your clinic account to access appointment management.</p></div>
-        <div class="auth-form">
-          <input id="loginEmail" type="email" placeholder="Email">
-          <input id="loginPassword" type="password" placeholder="Password">
-          <button class="primary-btn full" id="loginBtn">Login <span>→</span></button>
-          <p class="form-message" id="loginMessage"></p>
-          <div class="divider"><span>New patient?</span></div>
-          <input id="registerName" placeholder="Full name">
-          <input id="registerEmail" type="email" placeholder="Email">
-          <input id="registerPassword" type="password" placeholder="Password">
-          <button class="outline-btn full" id="registerBtn">Create account</button>
-          <p class="form-message" id="registerMessage"></p>
-        </div>
-      </div>
-
-      <div id="dashboard" class="dashboard hidden">
         <div class="dashboard-grid">
-          <section class="dash-card booking-card">
-            <div class="dash-title"><div><span class="eyebrow">NEW APPOINTMENT</span><h3>Book a slot</h3></div><span class="secure-tag">✓ Conflict check</span></div>
-            <label>Doctor<select id="doctorSelect"></select></label>
-            <div class="two-col"><label>Date<input id="appointmentDate" type="date"></label><label>Start<input id="startTime" type="time"></label></div>
-            <label>End time<input id="endTime" type="time"></label>
-            <button class="primary-btn full" id="bookBtn">Book appointment <span>→</span></button>
-            <p class="form-message" id="bookingMessage"></p>
-          </section>
-
-          <section class="dash-card">
-            <div class="dash-title"><div><span class="eyebrow">DOCTOR'S DAY</span><h3>Daily schedule</h3></div></div>
-            <div class="two-col"><label>Doctor<select id="scheduleDoctor"></select></label><label>Date<input id="scheduleDate" type="date"></label></div>
-            <button class="outline-btn full" id="scheduleBtn">View schedule</button>
-            <div id="scheduleResults" class="results"></div>
-          </section>
+          <div class="panel"><div class="panel-head"><div><span class="eyebrow">TODAY</span><h2>Appointment schedule</h2></div><button class="text-btn" data-section-link="appointments">View all →</button></div><div id="todayList" class="appointment-list"></div></div>
+          <div class="panel"><div class="panel-head"><div><span class="eyebrow">DOCTORS</span><h2>Availability</h2></div><button class="text-btn" data-section-link="schedule">Open schedule →</button></div><div id="doctorAvailability" class="doctor-availability"></div></div>
         </div>
+        <div class="quick-grid"><button class="quick-card" data-go="new-appointment"><b>+ New appointment</b><span>Book a conflict-free slot</span></button><button class="quick-card" data-section-link="schedule"><b>◷ View doctor day</b><span>See a doctor's complete schedule</span></button><button class="quick-card" data-section-link="cancellations"><b>₹ Cancellation fees</b><span>Review free and late cancellations</span></button><button class="quick-card" id="outboxBtn"><b>♢ Notification outbox</b><span>View reminders created by the clock</span></button></div>
+      </section>
 
-        <section class="dash-card">
-          <div class="dash-title"><div><span class="eyebrow">PATIENT SEARCH</span><h3>Find appointments</h3></div></div>
-          <div class="search-bar"><input id="searchName" placeholder="Search by patient name..."><button class="primary-btn" id="searchBtn">Search</button></div>
-          <div id="searchResults" class="results"></div>
-        </section>
+      <section id="appointments" class="page-section">
+        <div class="page-heading"><div><span class="eyebrow">APPOINTMENTS</span><h1>All appointments</h1><p>Search, reschedule, complete or cancel appointments.</p></div><button class="primary-btn" data-go="new-appointment">+ Book appointment</button></div>
+        <div class="panel"><div class="toolbar"><input id="appointmentSearch" placeholder="Search patient name..."><select id="appointmentStatus"><option value="">All statuses</option><option value="booked">Booked</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="no_show">No-show</option></select><button id="refreshAppointments" class="outline-btn">Refresh</button></div><div class="table-wrap"><table><thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th><th>Fee</th><th>Action</th></tr></thead><tbody id="appointmentsTable"></tbody></table></div></div>
+      </section>
 
-        <section class="dash-card">
-          <div class="dash-title"><div><span class="eyebrow">APPOINTMENTS</span><h3>Recent bookings</h3></div><button class="outline-btn small" id="refreshBtn">Refresh</button></div>
-          <div id="appointmentsResults" class="appointment-list"></div>
-        </section>
-      </div>
-    </section>
-  </main>
+      <section id="doctors" class="page-section"><div class="page-heading"><div><span class="eyebrow">DIRECTORY</span><h1>Doctors</h1><p>Manage doctors and open their daily schedule.</p></div><button id="addDoctorBtn" class="primary-btn">+ Add doctor</button></div><div id="doctorGrid" class="doctor-grid"></div></section>
 
-  <footer class="footer">
-    <div class="container footer-grid">
-      <div><a class="brand footer-brand" href="#home"><span class="brand-mark">+</span><span>Clinic<span>Flow</span></span></a><p>Smart appointment management for busy clinic front desks.</p></div>
-      <div><h4>Product</h4><a href="#features">Features</a><a href="#doctors">Doctors</a><a href="#about">How it works</a></div>
-      <div><h4>Assessment</h4><p>Full-stack clinic scheduling product</p><p>FastAPI · SQLite · REST API</p></div>
-    </div>
-    <div class="container footer-bottom"><span>ClinicFlow · 2026</span><span>Built for reliable scheduling.</span></div>
-  </footer>
+      <section id="patients" class="page-section"><div class="page-heading"><div><span class="eyebrow">PATIENTS</span><h1>Patient directory</h1><p>Find patients and see their appointment history.</p></div></div><div class="panel"><div class="toolbar"><input id="patientSearch" placeholder="Search patient by name..."><button id="patientSearchBtn" class="primary-btn">Search</button></div><div id="patientResults" class="patient-results"></div></div></section>
 
+      <section id="schedule" class="page-section"><div class="page-heading"><div><span class="eyebrow">DOCTOR SCHEDULE</span><h1>Doctor day view</h1><p>Check availability before booking or rescheduling.</p></div></div><div class="panel schedule-panel"><div class="schedule-controls"><label>Doctor<select id="scheduleDoctor"></select></label><label>Date<input id="scheduleDate" type="date"></label><button id="scheduleBtn" class="primary-btn">Load schedule</button></div><div id="scheduleResults"></div></div></section>
+
+      <section id="new-appointment" class="page-section"><div class="page-heading"><div><span class="eyebrow">BOOKING</span><h1>Book appointment</h1><p>The system checks the doctor's schedule before creating the booking.</p></div></div><div class="form-panel"><div class="booking-form"><label>Doctor<select id="doctorSelect"></select></label><label>Appointment date<input id="appointmentDate" type="date"></label><div class="two-col"><label>Start time<input id="startTime" type="time"></label><label>End time<input id="endTime" type="time"></label></div><button id="checkAvailabilityBtn" class="outline-btn">Check availability</button><div id="availabilityBox" class="availability-box hidden"></div><button id="bookBtn" class="primary-btn full">Confirm appointment</button><div id="bookingMessage" class="form-message"></div></div><div class="booking-help"><div class="help-icon">✓</div><h3>Conflict protection</h3><p>Two appointments for the same doctor can never overlap. Rescheduling runs the same check again.</p><div class="rule"><b>10:00–10:30</b><span>Doctor busy</span></div><div class="rule"><b>10:30–11:00</b><span class="good">Available</span></div></div></div></section>
+
+      <section id="cancellations" class="page-section"><div class="page-heading"><div><span class="eyebrow">FINANCE</span><h1>Cancellation & fees</h1><p>Review free cancellations and late cancellation charges.</p></div></div><div class="stats-grid compact"><div class="stat-card"><small>Cancelled</small><strong id="cancelCount">0</strong><span>Total cancellations</span></div><div class="stat-card"><small>Free cancellations</small><strong id="freeCancelCount">0</strong><span>₹0 fee</span></div><div class="stat-card"><small>Late cancellations</small><strong id="lateCancelCount">0</strong><span>Fee charged</span></div><div class="stat-card"><small>Fees</small><strong>₹<span id="feeTotal">0</span></strong><span>Total cancellation fees</span></div></div><div class="panel"><div class="panel-head"><h2>Cancellation records</h2></div><div class="table-wrap"><table><thead><tr><th>Patient</th><th>Doctor</th><th>Appointment</th><th>Status</th><th>Fee</th></tr></thead><tbody id="cancellationTable"></tbody></table></div></div></section>
+
+      <section id="reports" class="page-section"><div class="page-heading"><div><span class="eyebrow">REPORTS</span><h1>Clinic reports</h1><p>Quick operational view of appointment outcomes.</p></div><button id="reportRefresh" class="outline-btn">Refresh</button></div><div class="report-grid"><div class="panel"><span class="eyebrow">OUTCOMES</span><h2>Appointment status</h2><div id="statusBars" class="status-bars"></div></div><div class="panel"><span class="eyebrow">AUTOMATION</span><h2>System activity</h2><div id="automationInfo" class="activity-list"></div></div></div><div class="panel outbox-panel"><div class="panel-head"><div><span class="eyebrow">NOTIFICATION SERVICE</span><h2>Outbox</h2></div><button id="refreshOutbox" class="outline-btn small">Refresh</button></div><div id="outboxList"></div></div></section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden"><div class="modal-card"><button id="modalClose" class="modal-close">×</button><div id="modalContent"></div></div></div>
   <div id="toast" class="toast"></div>
   <script src="/static/app.js"></script>
 </body>

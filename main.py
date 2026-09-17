@@ -331,6 +331,22 @@ def login(
 # DOCTORS
 # ============================================================
 
+@app.get("/dashboard")
+def dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    today = date.today()
+    return {
+        "total_doctors": db.query(Doctor).count(),
+        "total_patients": db.query(User).count(),
+        "today_appointments": db.query(Appointment).filter(Appointment.appointment_date == today).count(),
+        "no_shows": db.query(Appointment).filter(Appointment.status == "no_show").count(),
+        "cancelled": db.query(Appointment).filter(Appointment.status == "cancelled").count(),
+        "completed": db.query(Appointment).filter(Appointment.status == "completed").count(),
+    }
+
+
 @app.get("/doctors")
 def get_doctors(
     db: Session = Depends(get_db)

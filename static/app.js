@@ -1,344 +1,64 @@
 const API = "";
 let token = localStorage.getItem("clinicflow_token") || "";
+let currentUser = null;
+let doctors = [];
+let appointments = [];
+const $ = id => document.getElementById(id);
+const apiHeaders = () => { const h={"Content-Type":"application/json"}; if(token) h.Authorization=`Bearer ${token}`; return h; };
+function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove("show"),2800)}
+function localDate(){const d=new Date();return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+async function jsonFetch(url,opts={}){const r=await fetch(API+url,{...opts,headers:{...apiHeaders(),...(opts.headers||{})}});let d={};try{d=await r.json()}catch{};if(r.status===401){logout(false)};return {r,d}}
 
-const $ = (id) => document.getElementById(id);
+function navigate(section){document.querySelectorAll(".page-section").forEach(x=>x.classList.remove("active-section"));const el=$(section);if(el)el.classList.add("active-section");document.querySelectorAll(".nav-item").forEach(x=>x.classList.toggle("active",x.dataset.section===section));const names={overview:"Dashboard",appointments:"Appointments",doctors:"Doctors",patients:"Patients",schedule:"Doctor Schedule",cancellations:"Cancellation & Fees",reports:"Reports","new-appointment":"Book Appointment"};$("pageTitle").textContent=names[section]||"Dashboard";if(section==="appointments")loadAppointments();if(section==="doctors")renderDoctors();if(section==="schedule")loadSchedule();if(section==="cancellations")renderCancellations();if(section==="reports")loadReports();if(section==="patients")searchPatients();window.scrollTo({top:0,behavior:"smooth"})}
+document.querySelectorAll(".nav-item").forEach(b=>b.addEventListener("click",()=>{navigate(b.dataset.section);$("sidebar").classList.remove("open")}));document.querySelectorAll("[data-section-link]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.sectionLink)));document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.go)));
+$("sidebarToggle").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
 
-function apiHeaders() {
-  const headers = { "Content-Type": "application/json" };
-  if (token) headers.Authorization = `Bearer ${token}`;
-  return headers;
-}
+async function register(){const name=$("registerName").value.trim(),email=$("registerEmail").value.trim(),password=$("registerPassword").value;if(!name||!email||!password){$("registerMessage").textContent="Please fill all fields.";return}const {r,d}=await jsonFetch("/auth/register",{method:"POST",body:JSON.stringify({name,email,password})});$("registerMessage").textContent=r.ok?"Account created. Sign in above.":d.detail||"Registration failed.";if(r.ok){$("loginEmail").value=email;$("loginPassword").value=password}}
+async function login(){const email=$("loginEmail").value.trim(),password=$("loginPassword").value;if(!email||!password){$("loginMessage").textContent="Enter email and password.";return}const {r,d}=await jsonFetch("/auth/login",{method:"POST",body:JSON.stringify({email,password})});if(!r.ok){$("loginMessage").textContent=d.detail||"Login failed.";return}token=d.access_token;currentUser=d.user;localStorage.setItem("clinicflow_token",token);localStorage.setItem("clinicflow_user",JSON.stringify(currentUser));showApp();toast("Welcome to the front desk")}
+function logout(show=true){token="";currentUser=null;localStorage.removeItem("clinicflow_token");localStorage.removeItem("clinicflow_user");$("dashboard").classList.add("hidden");$("loginBox").classList.remove("hidden");if(show)toast("Logged out")}
+function showApp(){if(!currentUser){try{currentUser=JSON.parse(localStorage.getItem("clinicflow_user")||"null")}catch{}}if(!currentUser)return logout(false);$("loginBox").classList.add("hidden");$("dashboard").classList.remove("hidden");const n=currentUser.name||"Admin";$("userName").textContent=n;$("helloName").textContent=n.split(" ")[0];$("userAvatar").textContent=n.split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();loadAll()}
+async function loadAll(){await loadDoctors();await loadAppointments();await loadDashboardStats();loadSchedule()}
 
-function showToast(message) {
-  const toast = $("toast");
-  toast.textContent = message;
-  toast.classList.add("show");
-  clearTimeout(window.toastTimer);
-  window.toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
-}
+async function loadDoctors(){const {r,d}=await jsonFetch("/doctors");if(!r.ok||!Array.isArray(d))return;doctors=d;const selects=[$("doctorSelect"),$("scheduleDoctor")];selects.forEach(s=>{s.innerHTML=doctors.map(x=>`<option value="${x.id}">${escapeHtml(x.name)} — ${escapeHtml(x.specialization)}</option>`).join("")});renderDoctors();renderAvailability()}
+function initials(name){return name.split(/\s+/).slice(-2).map(x=>x[0]).join("").toUpperCase()||"DR"}
+function renderDoctors(){$("doctorGrid").innerHTML=doctors.length?doctors.map(d=>`<div class="doctor-card"><div class="doctor-photo">${initials(d.name)}</div><div class="doctor-card-info"><b>${escapeHtml(d.name)}</b><small>${escapeHtml(d.specialization)}</small></div><span class="doctor-status">Active</span><button class="table-btn" onclick="openDoctorSchedule(${d.id})">Schedule</button></div>`).join(""):`<div class="panel">No doctors found.</div>`}
+function renderAvailability(){const today=localDate();const todayItems=appointments.filter(a=>a.appointment_date===today&&a.status==="booked");$("doctorAvailability").innerHTML=doctors.length?doctors.map(d=>{const count=todayItems.filter(a=>a.doctor_id===d.id).length;return `<div class="doctor-mini"><div class="avatar">${initials(d.name)}</div><div><b>${escapeHtml(d.name)}</b><small>${escapeHtml(d.specialization)} · ${count} booked today</small></div><span class="available-dot">${count?"Scheduled":"Available"}</span></div>`}).join(""):`<div class="muted">No doctors available.</div>`}
 
-function openDashboard() {
-  $("app").scrollIntoView({ behavior: "smooth", block: "start" });
-  setTimeout(() => {
-    if (token) showDashboard();
-    else $("loginEmail").focus();
-  }, 350);
-}
+async function loadAppointments(){if(!token)return;const {r,d}=await jsonFetch("/appointments?page=1&limit=100&sort_by=appointment_date&order=asc");if(!r.ok)return;appointments=d.items||[];renderAppointmentTable();renderToday();renderAvailability();renderCancellations();updateStats()}
+function renderToday(){const today=localDate();const items=appointments.filter(a=>a.appointment_date===today).sort((a,b)=>a.start_time.localeCompare(b.start_time));$("todayList").innerHTML=items.length?items.map(a=>appointmentRow(a)).join(""):`<div class="muted">No appointments scheduled for today.</div>`}
+function appointmentRow(a){return `<div class="appointment-row"><div><b>${escapeHtml(a.patient_name)}</b><small>${escapeHtml(a.patient_email||"")}</small></div><div><b>${escapeHtml(a.doctor_name)}</b><small>${escapeHtml(a.appointment_date)}</small></div><div><b>${a.start_time}–${a.end_time}</b><small>${statusLabel(a.status)}</small></div><span class="status ${escapeHtml(a.status)}">${statusLabel(a.status)}</span></div>`}
+function statusLabel(s){return ({booked:"Booked",completed:"Completed",cancelled:"Cancelled",no_show:"No-show"}[s]||s||"Unknown")}
+function renderAppointmentTable(){let list=[...appointments];const q=$("appointmentSearch").value.trim().toLowerCase(),st=$("appointmentStatus").value;if(q)list=list.filter(a=>(a.patient_name||"").toLowerCase().includes(q));if(st)list=list.filter(a=>a.status===st);$("appointmentsTable").innerHTML=list.length?list.map(a=>`<tr><td><b>${escapeHtml(a.patient_name)}</b><br><small>${escapeHtml(a.patient_email||"")}</small></td><td>${escapeHtml(a.doctor_name)}</td><td>${escapeHtml(a.appointment_date)}</td><td>${a.start_time}–${a.end_time}</td><td><span class="status ${escapeHtml(a.status)}">${statusLabel(a.status)}</span></td><td>₹${Number(a.cancellation_fee||0)}</td><td><div class="action-group">${a.status==="booked"?`<button class="table-btn" onclick="openReschedule(${a.id})">Reschedule</button><button class="table-btn" onclick="completeAppointment(${a.id})">Complete</button><button class="table-btn danger" onclick="cancelAppointment(${a.id})">Cancel</button>`:`<button class="table-btn" onclick="viewAppointment(${a.id})">View</button>`}</div></td></tr>`).join(""):`<tr><td colspan="7" class="muted">No matching appointments.</td></tr>`}
+$("appointmentSearch").addEventListener("input",renderAppointmentTable);$("appointmentStatus").addEventListener("change",renderAppointmentTable);$("refreshAppointments").addEventListener("click",loadAppointments);
+function updateStats(){const today=localDate(),todayList=appointments.filter(a=>a.appointment_date===today);$("statDoctors").textContent=doctors.length;$("statToday").textContent=todayList.length;$("statNoShows").textContent=appointments.filter(a=>a.status==="no_show").length}
+async function loadDashboardStats(){try{const {r,d}=await jsonFetch("/dashboard");if(r.ok){$("statDoctors").textContent=d.total_doctors;$("statPatients").textContent=d.total_patients;$("statToday").textContent=d.today_appointments;$("statNoShows").textContent=d.no_shows}}catch{} }
 
-document.querySelectorAll("[data-open-dashboard]").forEach(btn => {
-  btn.addEventListener("click", openDashboard);
-});
+async function bookAppointment(){const doctor_id=Number($("doctorSelect").value),appointment_date=$("appointmentDate").value,start_time=$("startTime").value,end_time=$("endTime").value;if(!doctor_id||!appointment_date||!start_time||!end_time){$("bookingMessage").textContent="Complete all fields.";return}if(start_time>=end_time){$("bookingMessage").textContent="End time must be after start time.";return}const {r,d}=await jsonFetch("/appointments",{method:"POST",body:JSON.stringify({doctor_id,appointment_date,start_time,end_time})});if(!r.ok){$("bookingMessage").textContent=d.detail||"Booking failed.";$("availabilityBox").className="availability-box bad";$("availabilityBox").classList.remove("hidden");$("availabilityBox").textContent="✕ Slot unavailable — this doctor already has an overlapping appointment.";toast(d.detail||"Slot unavailable");return}$("bookingMessage").textContent="Appointment booked successfully.";$("availabilityBox").className="availability-box good";$("availabilityBox").classList.remove("hidden");$("availabilityBox").textContent="✓ Appointment confirmed. The slot is conflict-free.";toast("Appointment booked");await loadAppointments();await loadDashboardStats();navigate("appointments")}
+async function checkAvailability(){const doctor_id=Number($("doctorSelect").value),date=$("appointmentDate").value,start=$("startTime").value,end=$("endTime").value;if(!doctor_id||!date||!start||!end||start>=end){$("availabilityBox").className="availability-box bad";$("availabilityBox").classList.remove("hidden");$("availabilityBox").textContent="Enter a valid doctor, date and time range.";return}const a=appointments.find(x=>x.doctor_id===doctor_id&&x.appointment_date===date&&x.status==="booked"&&x.start_time<end&&x.end_time>start);$("availabilityBox").className=`availability-box ${a?"bad":"good"}`;$("availabilityBox").classList.remove("hidden");$("availabilityBox").textContent=a?`✕ Conflict: ${a.doctor_name} is booked ${a.start_time}–${a.end_time} for ${a.patient_name}.`:`✓ Slot available. No overlapping booking was found.`}
 
-$("mobileMenu").addEventListener("click", () => $("mobileNav").classList.toggle("open"));
-document.querySelectorAll("#mobileNav a").forEach(a => a.addEventListener("click", () => $("mobileNav").classList.remove("open")));
+function openReschedule(id){const a=appointments.find(x=>x.id===id);if(!a)return;openModal(`<span class="eyebrow">T6 · LIFECYCLE</span><h2>Reschedule appointment</h2><p>Patient and doctor stay unchanged. The new time is checked again for overlap.</p><label>New date<input id="resDate" type="date" value="${a.appointment_date}"></label><div class="two-col"><label>Start<input id="resStart" type="time" value="${a.start_time}"></label><label>End<input id="resEnd" type="time" value="${a.end_time}"></label></div><div id="resMessage" class="form-message"></div><div class="modal-actions"><button class="outline-btn" onclick="closeModal()">Keep current time</button><button class="primary-btn" onclick="reschedule(${id})">Save new time</button></div>`)}
+async function reschedule(id){const body={appointment_date:$("resDate").value,start_time:$("resStart").value,end_time:$("resEnd").value};const {r,d}=await jsonFetch(`/appointments/${id}/reschedule`,{method:"PATCH",body:JSON.stringify(body)});if(!r.ok){$("resMessage").textContent=d.detail||"Reschedule failed.";toast(d.detail||"Reschedule failed");return}closeModal();toast("Appointment rescheduled");await loadAppointments();await loadDashboardStats()}
+async function completeAppointment(id){const {r,d}=await jsonFetch(`/appointments/${id}/complete`,{method:"PATCH"});if(!r.ok){toast(d.detail||"Could not complete");return}toast("Appointment marked completed");await loadAppointments()}
+async function cancelAppointment(id){const a=appointments.find(x=>x.id===id);if(!a)return;openModal(`<span class="eyebrow">CANCELLATION</span><h2>Cancel appointment?</h2><p>${escapeHtml(a.patient_name)} · ${escapeHtml(a.doctor_name)} · ${a.appointment_date} · ${a.start_time}–${a.end_time}</p><p>The system will calculate the cancellation fee according to the clinic policy.</p><div class="modal-actions"><button class="outline-btn" onclick="closeModal()">Keep appointment</button><button class="primary-btn" onclick="confirmCancel(${id})">Confirm cancellation</button></div>`)}
+async function confirmCancel(id){const {r,d}=await jsonFetch(`/appointments/${id}/cancel`,{method:"PATCH"});if(!r.ok){toast(d.detail||"Cancellation failed");return}closeModal();toast(`Cancelled · Fee ₹${Number(d.cancellation_fee||0)}`);await loadAppointments()}
+function viewAppointment(id){const a=appointments.find(x=>x.id===id);if(!a)return;openModal(`<span class="eyebrow">APPOINTMENT DETAILS</span><h2>${escapeHtml(a.patient_name)}</h2><p>${escapeHtml(a.doctor_name)} · ${a.appointment_date} · ${a.start_time}–${a.end_time}</p><p>Status: <b>${statusLabel(a.status)}</b><br>Cancellation fee: <b>₹${Number(a.cancellation_fee||0)}</b></p>`)}
 
-async function register() {
-  const name = $("registerName").value.trim();
-  const email = $("registerEmail").value.trim();
-  const password = $("registerPassword").value;
+function openDoctorSchedule(id){$("scheduleDoctor").value=id;navigate("schedule");loadSchedule()}
+async function loadSchedule(){const doctor=$("scheduleDoctor").value,date=$("scheduleDate").value;if(!doctor||!date)return;const {r,d}=await jsonFetch(`/doctors/${doctor}/appointments?appointment_date=${encodeURIComponent(date)}`);if(!r.ok){$("scheduleResults").innerHTML=`<div class="muted">${escapeHtml(d.detail||"Could not load schedule")}</div>`;return}const items=d.appointments||[];$("scheduleResults").innerHTML=`<div class="schedule-result"><div class="schedule-header"><b>${escapeHtml(d.doctor?.name||"Doctor")}</b><span>${escapeHtml(d.date||date)}</span></div>${items.length?items.map(a=>`<div class="schedule-slot"><b>${a.start_time} – ${a.end_time}</b><div><b>${escapeHtml(a.patient_name)}</b><small>${statusLabel(a.status)}</small></div><span class="status ${escapeHtml(a.status)}">${statusLabel(a.status)}</span></div>`).join(""):`<div class="schedule-slot"><b>No bookings</b><span>Doctor is free for this day.</span></div>`}</div>`}
 
-  if (!name || !email || !password) {
-    $("registerMessage").textContent = "Please fill all registration fields.";
-    return;
-  }
+async function searchPatients(){const q=$("patientSearch").value.trim();if(!q){$("patientResults").innerHTML=`<div class="muted">Enter a patient name to search appointments.</div>`;return}const {r,d}=await jsonFetch(`/appointments/search?patientName=${encodeURIComponent(q)}&page=1&limit=100`);if(!r.ok){$("patientResults").innerHTML=`<div>${escapeHtml(d.detail||"Search failed")}</div>`;return}const items=d.items||[];const grouped={};items.forEach(a=>(grouped[a.patient_id]??=[]).push(a));$("patientResults").innerHTML=items.length?Object.values(grouped).map(list=>{const a=list[0];return `<div class="patient-card"><div><b>${escapeHtml(a.patient_name)}</b><small>${escapeHtml(a.patient_email||"")} · ${list.length} appointment(s)</small></div><button class="table-btn" onclick="navigate('appointments');document.getElementById('appointmentSearch').value=decodeURIComponent('${encodeURIComponent(a.patient_name)}');renderAppointmentTable()">View history</button></div>`}).join(""):`<div class="muted">No patient appointments found.</div>`}
+$("patientSearchBtn").addEventListener("click",searchPatients);$("patientSearch").addEventListener("keydown",e=>{if(e.key==="Enter")searchPatients()});
 
-  try {
-    const response = await fetch(`${API}/auth/register`, {
-      method: "POST",
-      headers: apiHeaders(),
-      body: JSON.stringify({ name, email, password })
-    });
-    const data = await response.json();
+function renderCancellations(){const list=appointments.filter(a=>a.status==="cancelled");const fees=list.reduce((s,a)=>s+Number(a.cancellation_fee||0),0);$("cancelCount").textContent=list.length;$("freeCancelCount").textContent=list.filter(a=>Number(a.cancellation_fee||0)===0).length;$("lateCancelCount").textContent=list.filter(a=>Number(a.cancellation_fee||0)>0).length;$("feeTotal").textContent=fees;$("cancellationTable").innerHTML=list.length?list.map(a=>`<tr><td>${escapeHtml(a.patient_name)}</td><td>${escapeHtml(a.doctor_name)}</td><td>${a.appointment_date} · ${a.start_time}</td><td><span class="status cancelled">Cancelled</span></td><td>₹${Number(a.cancellation_fee||0)}</td></tr>`).join(""):`<tr><td colspan="5" class="muted">No cancellation records.</td></tr>`}
 
-    $("registerMessage").textContent = response.ok
-      ? "Account created. You can now login."
-      : (data.detail || "Registration failed.");
-
-    if (response.ok) {
-      $("loginEmail").value = email;
-      $("loginPassword").value = password;
-    }
-  } catch {
-    $("registerMessage").textContent = "Could not connect to the server.";
-  }
-}
-
-async function login() {
-  const email = $("loginEmail").value.trim();
-  const password = $("loginPassword").value;
-
-  if (!email || !password) {
-    $("loginMessage").textContent = "Enter your email and password.";
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API}/auth/login`, {
-      method: "POST",
-      headers: apiHeaders(),
-      body: JSON.stringify({ email, password })
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      $("loginMessage").textContent = data.detail || "Login failed.";
-      return;
-    }
-
-    token = data.access_token;
-    localStorage.setItem("clinicflow_token", token);
-    $("loginMessage").textContent = "";
-    showDashboard();
-    showToast("Welcome back.");
-  } catch {
-    $("loginMessage").textContent = "Could not connect to the server.";
-  }
-}
-
-function showDashboard() {
-  $("loginBox").classList.add("hidden");
-  $("dashboard").classList.remove("hidden");
-  loadDoctors();
-  loadAppointments();
-}
-
-function logout() {
-  token = "";
-  localStorage.removeItem("clinicflow_token");
-  $("dashboard").classList.add("hidden");
-  $("loginBox").classList.remove("hidden");
-  showToast("Logged out.");
-}
-
-async function loadDoctors() {
-  try {
-    const response = await fetch(`${API}/doctors`);
-    const doctors = await response.json();
-
-    if (!response.ok || !Array.isArray(doctors)) return;
-
-    const doctorSelect = $("doctorSelect");
-    const scheduleDoctor = $("scheduleDoctor");
-    const landing = $("landingDoctors");
-
-    doctorSelect.innerHTML = "";
-    scheduleDoctor.innerHTML = "";
-
-    doctors.forEach((doctor, index) => {
-      const option = document.createElement("option");
-      option.value = doctor.id;
-      option.textContent = `${doctor.name} — ${doctor.specialization}`;
-      doctorSelect.appendChild(option);
-      scheduleDoctor.appendChild(option.cloneNode(true));
-    });
-
-    landing.innerHTML = doctors.slice(0, 6).map((doctor, index) => {
-      const initials = doctor.name.split(/\s+/).slice(-2).map(x => x[0]).join("").toUpperCase();
-      return `
-        <article class="doctor-card">
-          <div class="doctor-photo">${initials || "DR"}</div>
-          <div>
-            <strong>${escapeHtml(doctor.name)}</strong>
-            <small>${escapeHtml(doctor.specialization || "Doctor")}</small>
-          </div>
-          <span class="doctor-status">Available</span>
-        </article>`;
-    }).join("");
-
-    if (!doctors.length) {
-      landing.innerHTML = `<div class="doctor-card"><strong>No doctors found.</strong></div>`;
-    }
-  } catch {
-    $("landingDoctors").innerHTML = `<div class="doctor-card"><strong>Doctors could not be loaded.</strong></div>`;
-  }
-}
-
-async function bookAppointment() {
-  const doctor_id = Number($("doctorSelect").value);
-  const appointment_date = $("appointmentDate").value;
-  const start_time = $("startTime").value;
-  const end_time = $("endTime").value;
-
-  if (!doctor_id || !appointment_date || !start_time || !end_time) {
-    $("bookingMessage").textContent = "Complete all appointment fields.";
-    return;
-  }
-
-  if (start_time >= end_time) {
-    $("bookingMessage").textContent = "End time must be after start time.";
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API}/appointments`, {
-      method: "POST",
-      headers: apiHeaders(),
-      body: JSON.stringify({ doctor_id, appointment_date, start_time, end_time })
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      $("bookingMessage").textContent = data.detail || "Booking failed.";
-      showToast(data.detail || "Booking failed.");
-      return;
-    }
-
-    $("bookingMessage").textContent = "Appointment booked successfully.";
-    showToast("Appointment booked.");
-    loadAppointments();
-    loadSchedule();
-  } catch {
-    $("bookingMessage").textContent = "Could not connect to the server.";
-  }
-}
-
-async function loadAppointments() {
-  if (!token) return;
-
-  try {
-    const response = await fetch(`${API}/appointments?page=1&limit=10&sort_by=appointment_date&order=asc`, {
-      headers: apiHeaders()
-    });
-
-    if (response.status === 401) {
-      logout();
-      return;
-    }
-
-    const data = await response.json();
-    if (!response.ok) return;
-
-    const items = data.items || [];
-    const container = $("appointmentsResults");
-
-    if (!items.length) {
-      container.innerHTML = `<div class="result-item muted">No appointments found.</div>`;
-      return;
-    }
-
-    container.innerHTML = items.map(appointment => {
-      const cancelled = appointment.status === "cancelled";
-      return `
-        <div class="appointment-item">
-          <div><strong>${escapeHtml(appointment.patient_name || "Patient")}</strong><small>${escapeHtml(appointment.doctor_name || "Doctor")}</small></div>
-          <div><strong>${escapeHtml(appointment.appointment_date)}</strong><small>${escapeHtml(appointment.start_time)} – ${escapeHtml(appointment.end_time)}</small></div>
-          <span class="status ${cancelled ? "cancelled" : ""}">${escapeHtml(appointment.status || "booked")}</span>
-          ${cancelled
-            ? `<small>Fee: ₹${Number(appointment.cancellation_fee || 0)}</small>`
-            : `<button class="cancel-btn" onclick="cancelAppointment(${appointment.id})">Cancel</button>`}
-        </div>`;
-    }).join("");
-  } catch {}
-}
-
-async function cancelAppointment(id) {
-  if (!confirm("Cancel this appointment?")) return;
-
-  try {
-    const response = await fetch(`${API}/appointments/${id}/cancel`, {
-      method: "PATCH",
-      headers: apiHeaders()
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      showToast(data.detail || "Cancellation failed.");
-      return;
-    }
-
-    showToast(`Cancelled. Fee: ₹${Number(data.cancellation_fee || 0)}`);
-    loadAppointments();
-  } catch {
-    showToast("Could not connect to the server.");
-  }
-}
-
-async function searchAppointments() {
-  const name = $("searchName").value.trim();
-  if (!name) {
-    $("searchResults").innerHTML = `<div class="result-item muted">Enter a patient name.</div>`;
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API}/appointments/search?patientName=${encodeURIComponent(name)}&page=1&limit=10`, {
-      headers: apiHeaders()
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      $("searchResults").innerHTML = `<div class="result-item">${escapeHtml(data.detail || "Search failed.")}</div>`;
-      return;
-    }
-
-    const items = data.items || [];
-    $("searchResults").innerHTML = items.length
-      ? items.map(a => `
-          <div class="result-item">
-            <strong>${escapeHtml(a.patient_name || "Patient")}</strong> · ${escapeHtml(a.doctor_name || "Doctor")}
-            <br><span class="muted">${escapeHtml(a.appointment_date)} · ${escapeHtml(a.start_time)}–${escapeHtml(a.end_time)} · ${escapeHtml(a.status || "")}</span>
-          </div>`).join("")
-      : `<div class="result-item muted">No appointments found for "${escapeHtml(name)}".</div>`;
-  } catch {
-    $("searchResults").innerHTML = `<div class="result-item">Could not connect to the server.</div>`;
-  }
-}
-
-async function loadSchedule() {
-  const doctor = $("scheduleDoctor").value;
-  const date = $("scheduleDate").value;
-
-  if (!doctor || !date) {
-    $("scheduleResults").innerHTML = `<div class="result-item muted">Select a doctor and date.</div>`;
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API}/doctors/${doctor}/appointments?appointment_date=${encodeURIComponent(date)}`, {
-      headers: apiHeaders()
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      $("scheduleResults").innerHTML = `<div class="result-item">${escapeHtml(data.detail || "Could not load schedule.")}</div>`;
-      return;
-    }
-
-    const items = data.appointments || [];
-    $("scheduleResults").innerHTML = `
-      <div class="result-item"><strong>${escapeHtml(data.doctor?.name || "Doctor")}</strong> · ${escapeHtml(data.date || date)}</div>
-      ${items.length
-        ? items.map(a => `<div class="result-item"><strong>${escapeHtml(a.start_time)} – ${escapeHtml(a.end_time)}</strong> · ${escapeHtml(a.patient_name || "Patient")} <span class="muted">· ${escapeHtml(a.status || "")}</span></div>`).join("")
-        : `<div class="result-item muted">No appointments for this day.</div>`}`;
-  } catch {
-    $("scheduleResults").innerHTML = `<div class="result-item">Could not connect to the server.</div>`;
-  }
-}
-
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-  }[ch]));
-}
-
-$("registerBtn").addEventListener("click", register);
-$("loginBtn").addEventListener("click", login);
-$("logoutBtn").addEventListener("click", logout);
-$("bookBtn").addEventListener("click", bookAppointment);
-$("searchBtn").addEventListener("click", searchAppointments);
-$("scheduleBtn").addEventListener("click", loadSchedule);
-$("refreshBtn").addEventListener("click", loadAppointments);
-
-["loginPassword", "registerPassword"].forEach(id => {
-  $(id).addEventListener("keydown", e => {
-    if (e.key === "Enter") login();
-  });
-});
-
-const today = new Date();
-const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-$("appointmentDate").value = localDate;
-$("scheduleDate").value = localDate;
-
-if (token) showDashboard();
-loadDoctors();
+async function runClock(){const {r,d}=await jsonFetch("/clock",{method:"POST",body:JSON.stringify({now:new Date().toISOString()})});if(!r.ok){toast(d.detail||"Clock failed");return}toast(`Clock processed · ${d.reminders_created} reminders · ${d.no_shows_marked} no-shows`);await loadAppointments();await loadDashboardStats();loadReports()}
+$("clockBtn").addEventListener("click",runClock);
+async function loadOutbox(){const {r,d}=await jsonFetch("/outbox");if(!r.ok)return;const items=d.items||[];$("outboxList").innerHTML=items.length?items.map(x=>`<div class="outbox-item"><b>Appointment #${x.appointment_id} · ${x.sent?"Sent":"Queued"}</b><small>${escapeHtml(x.message)}</small></div>`).join(""):`<div class="muted">No notifications in the outbox yet. Run Clock to create today's reminders.</div>`}
+async function loadReports(){const counts={booked:0,completed:0,cancelled:0,no_show:0};appointments.forEach(a=>counts[a.status]=(counts[a.status]||0)+1);const max=Math.max(1,...Object.values(counts));$("statusBars").innerHTML=Object.entries(counts).map(([k,v])=>`<div><div class="bar-label"><span>${statusLabel(k)}</span><b>${v}</b></div><div class="bar"><i style="width:${v/max*100}%"></i></div></div>`).join("");const out=await jsonFetch("/outbox");const total=out.r.ok?out.d.total:0;$("automationInfo").innerHTML=`<div class="activity-item"><i class="dot"></i><div><b>T1 · Notification Service</b><span>${total} reminder(s) currently in /outbox</span></div></div><div class="activity-item"><i class="dot"></i><div><b>T2 · Auto no-show</b><span>${counts.no_show} appointment(s) marked no-show</span></div></div><div class="activity-item"><i class="dot"></i><div><b>T6 · Reschedule</b><span>New time is re-checked for overlap before saving</span></div></div>`;loadOutbox()}
+$("outboxBtn").addEventListener("click",()=>{navigate("reports");loadReports()});$("refreshOutbox").addEventListener("click",loadOutbox);$("reportRefresh").addEventListener("click",loadReports);$("scheduleBtn").addEventListener("click",loadSchedule);$("addDoctorBtn").addEventListener("click",()=>openModal(`<span class="eyebrow">DIRECTORY</span><h2>Add doctor</h2><p>Add a doctor to the clinic schedule.</p><label>Name<input id="newDoctorName" placeholder="Dr. A. Sharma"></label><label>Specialization<input id="newDoctorSpec" placeholder="General Physician"></label><div id="doctorMessage" class="form-message"></div><div class="modal-actions"><button class="outline-btn" onclick="closeModal()">Cancel</button><button class="primary-btn" onclick="createDoctor()">Add doctor</button></div>`));
+async function createDoctor(){const name=$("newDoctorName").value.trim(),specialization=$("newDoctorSpec").value.trim();if(!name||!specialization){$("doctorMessage").textContent="Enter name and specialization.";return}const {r,d}=await jsonFetch("/doctors",{method:"POST",body:JSON.stringify({name,specialization})});if(!r.ok){$("doctorMessage").textContent=d.detail||"Could not add doctor";return}closeModal();toast("Doctor added");await loadDoctors();await loadDashboardStats()}
+function openModal(html){$("modalContent").innerHTML=html;$("modal").classList.remove("hidden")}function closeModal(){$("modal").classList.add("hidden")}
+$("modalClose").addEventListener("click",closeModal);$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});$("bookBtn").addEventListener("click",bookAppointment);$("checkAvailabilityBtn").addEventListener("click",checkAvailability);$("logoutBtn").addEventListener("click",()=>logout(true));$("loginBtn").addEventListener("click",login);$("registerBtn").addEventListener("click",register);["loginPassword","registerPassword"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")login()}));
+$("appointmentDate").value=localDate();$("scheduleDate").value=localDate();
+try{currentUser=JSON.parse(localStorage.getItem("clinicflow_user")||"null")}catch{}if(token&&currentUser)showApp();
